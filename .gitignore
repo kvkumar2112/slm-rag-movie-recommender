@@ -15,8 +15,11 @@ chroma_db/
 data/raw/
 data/training/
 
-# Secrets
+# Secrets: any env file except the committed template
 .env
+*.env
+.env.*
+!.env.example
 
 # IDE / OS
 .idea/

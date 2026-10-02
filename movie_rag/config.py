@@ -3,8 +3,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Secrets (TMDB_ACCESS_TOKEN, OPENAI_API_KEY, ...) can live in a gitignored .env file.
-load_dotenv()
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+# Secrets (TMDB_ACCESS_TOKEN, OPENAI_API_KEY, ...) live in gitignored env files at the project
+# root. Real environment variables win over both; config-local.env wins over .env.
+load_dotenv(PROJECT_ROOT / "config-local.env")
+load_dotenv(PROJECT_ROOT / ".env")
 
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 COLLECTION_NAME = "movie_catalog"
