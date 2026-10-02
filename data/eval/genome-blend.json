@@ -1,0 +1,1519 @@
+{
+  "label": "minilm + genome blend, alpha 0.7, 20 tags",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "indexed_movies": 3794,
+  "k": 10,
+  "n": 100,
+  "min_relevance": 0.5,
+  "alpha": 0.7,
+  "genome_tags": 20,
+  "hide_anchors": false,
+  "summary": {
+    "precision_at_k": 0.7633333333333333,
+    "recall_at_n": 0.6583690366493589,
+    "mrr": 0.9290598290598291,
+    "random_precision": 0.016034088912317696
+  },
+  "queries": [
+    {
+      "id": "buddy_road",
+      "n_relevant": 21,
+      "precision_at_k": 0.0,
+      "recall_at_n": 0.47619047619047616,
+      "reciprocal_rank": 0.038461538461538464,
+      "random_precision": 0.005535055350553505,
+      "top_k": [
+        [
+          "The Station Agent",
+          false
+        ],
+        [
+          "Driving Miss Daisy",
+          false
+        ],
+        [
+          "Intouchables",
+          false
+        ],
+        [
+          "The Visitor",
+          false
+        ],
+        [
+          "When Harry Met Sally...",
+          false
+        ],
+        [
+          "Notes on a Scandal",
+          false
+        ],
+        [
+          "Boys on the Side",
+          false
+        ],
+        [
+          "The Odd Couple",
+          false
+        ],
+        [
+          "Sideways",
+          false
+        ],
+        [
+          "Friends with Benefits",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "courtroom",
+      "n_relevant": 59,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.8983050847457628,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.01555086979441223,
+      "top_k": [
+        [
+          "The Verdict",
+          true
+        ],
+        [
+          "A Civil Action",
+          true
+        ],
+        [
+          "Inherit the Wind",
+          true
+        ],
+        [
+          "...And Justice for All",
+          true
+        ],
+        [
+          "The Lincoln Lawyer",
+          true
+        ],
+        [
+          "Runaway Jury",
+          true
+        ],
+        [
+          "Anatomy of a Murder",
+          true
+        ],
+        [
+          "12 Angry Men",
+          true
+        ],
+        [
+          "Witness for the Prosecution",
+          true
+        ],
+        [
+          "The Accused",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "heist",
+      "n_relevant": 117,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.48717948717948717,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.03083816552451239,
+      "top_k": [
+        [
+          "Inside Man",
+          true
+        ],
+        [
+          "Tower Heist",
+          true
+        ],
+        [
+          "The Town",
+          true
+        ],
+        [
+          "Bandits",
+          true
+        ],
+        [
+          "The Bank Job",
+          true
+        ],
+        [
+          "Dog Day Afternoon",
+          true
+        ],
+        [
+          "Escape from Alcatraz",
+          true
+        ],
+        [
+          "Take the Money and Run",
+          true
+        ],
+        [
+          "The Italian Job",
+          true
+        ],
+        [
+          "Killing Zoe",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "time_travel",
+      "n_relevant": 76,
+      "precision_at_k": 0.9,
+      "recall_at_n": 0.6842105263157895,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.020031628887717447,
+      "top_k": [
+        [
+          "Looper",
+          true
+        ],
+        [
+          "The Time Machine",
+          true
+        ],
+        [
+          "Predestination",
+          true
+        ],
+        [
+          "The Time Machine",
+          true
+        ],
+        [
+          "Timecrimes (Cronocr\u00edmenes, Los)",
+          true
+        ],
+        [
+          "In Time",
+          false
+        ],
+        [
+          "X-Men: Days of Future Past",
+          true
+        ],
+        [
+          "Back to the Future",
+          true
+        ],
+        [
+          "Back to the Future Part III",
+          true
+        ],
+        [
+          "Bill & Ted's Excellent Adventure",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "dystopia",
+      "n_relevant": 179,
+      "precision_at_k": 0.9,
+      "recall_at_n": 0.4581005586592179,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.047179757511860834,
+      "top_k": [
+        [
+          "Equilibrium",
+          true
+        ],
+        [
+          "V for Vendetta",
+          true
+        ],
+        [
+          "1984 (Nineteen Eighty-Four)",
+          true
+        ],
+        [
+          "Idiocracy",
+          true
+        ],
+        [
+          "The Wave (Welle, Die)",
+          false
+        ],
+        [
+          "Brazil",
+          true
+        ],
+        [
+          "Metropolis",
+          true
+        ],
+        [
+          "Insurgent",
+          true
+        ],
+        [
+          "Elysium",
+          true
+        ],
+        [
+          "Looper",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "coming_of_age",
+      "n_relevant": 112,
+      "precision_at_k": 0.9,
+      "recall_at_n": 0.5089285714285714,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.02952029520295203,
+      "top_k": [
+        [
+          "The Perks of Being a Wallflower",
+          true
+        ],
+        [
+          "The Girl Who Leapt Through Time (Toki o kakeru sh\u00f4jo)",
+          true
+        ],
+        [
+          "Easy A",
+          true
+        ],
+        [
+          "An Education",
+          true
+        ],
+        [
+          "Ferris Bueller's Day Off",
+          true
+        ],
+        [
+          "Crazy/Beautiful",
+          false
+        ],
+        [
+          "The Breakfast Club",
+          true
+        ],
+        [
+          "Charlie Bartlett",
+          true
+        ],
+        [
+          "The Spectacular Now",
+          true
+        ],
+        [
+          "Sixteen Candles",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "haunted_house",
+      "n_relevant": 37,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.9459459459459459,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.009752240379546653,
+      "top_k": [
+        [
+          "Insidious",
+          true
+        ],
+        [
+          "The Haunting",
+          true
+        ],
+        [
+          "Thirteen Ghosts (a.k.a. Thir13en Ghosts)",
+          true
+        ],
+        [
+          "The Haunting",
+          true
+        ],
+        [
+          "The Orphanage (Orfanato, El)",
+          true
+        ],
+        [
+          "The Others",
+          true
+        ],
+        [
+          "Poltergeist",
+          true
+        ],
+        [
+          "House",
+          true
+        ],
+        [
+          "Paranormal Activity",
+          true
+        ],
+        [
+          "The Amityville Horror",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "zombies",
+      "n_relevant": 37,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.8648648648648649,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.009752240379546653,
+      "top_k": [
+        [
+          "28 Weeks Later",
+          true
+        ],
+        [
+          "28 Days Later",
+          true
+        ],
+        [
+          "Land of the Dead",
+          true
+        ],
+        [
+          "World War Z",
+          true
+        ],
+        [
+          "Dawn of the Dead",
+          true
+        ],
+        [
+          "Resident Evil: Afterlife",
+          true
+        ],
+        [
+          "Night of the Living Dead",
+          true
+        ],
+        [
+          "Dawn of the Dead",
+          true
+        ],
+        [
+          "Resident Evil: Retribution",
+          true
+        ],
+        [
+          "Day of the Dead",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "serial_killer",
+      "n_relevant": 55,
+      "precision_at_k": 0.6,
+      "recall_at_n": 0.6363636363636364,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.014496573537163942,
+      "top_k": [
+        [
+          "Insomnia",
+          true
+        ],
+        [
+          "Memories of Murder (Salinui chueok)",
+          true
+        ],
+        [
+          "A Shot in the Dark",
+          false
+        ],
+        [
+          "The Bone Collector",
+          true
+        ],
+        [
+          "Taking Lives",
+          true
+        ],
+        [
+          "Laura",
+          false
+        ],
+        [
+          "Insomnia",
+          true
+        ],
+        [
+          "The Secret in Their Eyes (El secreto de sus ojos)",
+          true
+        ],
+        [
+          "Manhattan Murder Mystery",
+          false
+        ],
+        [
+          "Fracture",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "mafia",
+      "n_relevant": 65,
+      "precision_at_k": 0.8,
+      "recall_at_n": 0.5230769230769231,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.01713231418028466,
+      "top_k": [
+        [
+          "A History of Violence",
+          true
+        ],
+        [
+          "Goodfellas",
+          true
+        ],
+        [
+          "A Bronx Tale",
+          true
+        ],
+        [
+          "The Boondock Saints",
+          true
+        ],
+        [
+          "Lawless",
+          false
+        ],
+        [
+          "The Godfather",
+          true
+        ],
+        [
+          "Before the Devil Knows You're Dead",
+          false
+        ],
+        [
+          "Infernal Affairs (Mou gaan dou)",
+          true
+        ],
+        [
+          "King of New York",
+          true
+        ],
+        [
+          "Road to Perdition",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "sports_underdog",
+      "n_relevant": 62,
+      "precision_at_k": 0.9,
+      "recall_at_n": 0.7903225806451613,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.016341591987348445,
+      "top_k": [
+        [
+          "The Replacements",
+          true
+        ],
+        [
+          "Miracle",
+          true
+        ],
+        [
+          "Dodgeball: A True Underdog Story",
+          true
+        ],
+        [
+          "Bring It On",
+          false
+        ],
+        [
+          "Varsity Blues",
+          true
+        ],
+        [
+          "Semi-Pro",
+          true
+        ],
+        [
+          "The Bad News Bears",
+          true
+        ],
+        [
+          "D3: The Mighty Ducks",
+          true
+        ],
+        [
+          "Remember the Titans",
+          true
+        ],
+        [
+          "D2: The Mighty Ducks",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "nyc_romcom",
+      "n_relevant": 42,
+      "precision_at_k": 0.4,
+      "recall_at_n": 0.5,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.01107011070110701,
+      "top_k": [
+        [
+          "When Harry Met Sally...",
+          true
+        ],
+        [
+          "Manhattan",
+          false
+        ],
+        [
+          "Love and Other Drugs",
+          false
+        ],
+        [
+          "Kissing Jessica Stein",
+          true
+        ],
+        [
+          "Addicted to Love",
+          false
+        ],
+        [
+          "Friends with Benefits",
+          true
+        ],
+        [
+          "The Big Sick",
+          false
+        ],
+        [
+          "Date Night",
+          false
+        ],
+        [
+          "Nick and Norah's Infinite Playlist",
+          true
+        ],
+        [
+          "Chasing Amy",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "cyberpunk",
+      "n_relevant": 24,
+      "precision_at_k": 0.4,
+      "recall_at_n": 0.875,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.0063257775434897206,
+      "top_k": [
+        [
+          "Hackers",
+          true
+        ],
+        [
+          "Johnny Mnemonic",
+          true
+        ],
+        [
+          "The Matrix",
+          true
+        ],
+        [
+          "Tron",
+          true
+        ],
+        [
+          "Antitrust",
+          false
+        ],
+        [
+          "WarGames",
+          false
+        ],
+        [
+          "Ghost in the Shell (K\u00f4kaku kid\u00f4tai)",
+          false
+        ],
+        [
+          "Sneakers",
+          false
+        ],
+        [
+          "Transcendence",
+          false
+        ],
+        [
+          "Swordfish",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "talking_animals",
+      "n_relevant": 159,
+      "precision_at_k": 0.7,
+      "recall_at_n": 0.4276729559748428,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.0419082762256194,
+      "top_k": [
+        [
+          "Madagascar",
+          true
+        ],
+        [
+          "Legend of the Guardians: The Owls of Ga'Hoole",
+          true
+        ],
+        [
+          "Doctor Dolittle",
+          true
+        ],
+        [
+          "The Host (Gwoemul)",
+          false
+        ],
+        [
+          "Zootopia",
+          true
+        ],
+        [
+          "Swiss Family Robinson",
+          false
+        ],
+        [
+          "For the Birds",
+          false
+        ],
+        [
+          "Brother Bear",
+          true
+        ],
+        [
+          "The Secret Life of Pets",
+          true
+        ],
+        [
+          "The Jungle Book",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "black_satire",
+      "n_relevant": 94,
+      "precision_at_k": 0.2,
+      "recall_at_n": 0.2127659574468085,
+      "reciprocal_rank": 0.5,
+      "random_precision": 0.024775962045334738,
+      "top_k": [
+        [
+          "Scary Movie",
+          false
+        ],
+        [
+          "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
+          true
+        ],
+        [
+          "Jackass: The Movie",
+          false
+        ],
+        [
+          "There's Something About Mary",
+          false
+        ],
+        [
+          "It's a Mad, Mad, Mad, Mad World",
+          false
+        ],
+        [
+          "Horrible Bosses",
+          false
+        ],
+        [
+          "The Jerk",
+          false
+        ],
+        [
+          "Death at a Funeral",
+          true
+        ],
+        [
+          "Borat: Cultural Learnings of America for Make Benefit Glorious Nation of Kazakhstan",
+          false
+        ],
+        [
+          "Dumb & Dumber (Dumb and Dumber)",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "cold_war_spies",
+      "n_relevant": 49,
+      "precision_at_k": 0.6,
+      "recall_at_n": 0.8775510204081632,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.012915129151291513,
+      "top_k": [
+        [
+          "Spy Game",
+          true
+        ],
+        [
+          "Get Smart",
+          true
+        ],
+        [
+          "The Spy Who Loved Me",
+          true
+        ],
+        [
+          "Tinker Tailor Soldier Spy",
+          true
+        ],
+        [
+          "Jason Bourne",
+          false
+        ],
+        [
+          "Spy",
+          false
+        ],
+        [
+          "Red",
+          false
+        ],
+        [
+          "The Man from U.N.C.L.E.",
+          true
+        ],
+        [
+          "Atomic Blonde",
+          true
+        ],
+        [
+          "Kingsman: The Secret Service",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "mind_bender",
+      "n_relevant": 72,
+      "precision_at_k": 0.6,
+      "recall_at_n": 0.4444444444444444,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.018977332630469163,
+      "top_k": [
+        [
+          "Memento",
+          true
+        ],
+        [
+          "The Butterfly Effect",
+          true
+        ],
+        [
+          "Timecrimes (Cronocr\u00edmenes, Los)",
+          true
+        ],
+        [
+          "Eternal Sunshine of the Spotless Mind",
+          false
+        ],
+        [
+          "Predestination",
+          true
+        ],
+        [
+          "D\u00e9j\u00e0 Vu (Deja Vu)",
+          false
+        ],
+        [
+          "The Jacket",
+          true
+        ],
+        [
+          "Unbreakable",
+          true
+        ],
+        [
+          "The Forgotten",
+          false
+        ],
+        [
+          "Unforgettable",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "wilderness_survival",
+      "n_relevant": 23,
+      "precision_at_k": 0.8,
+      "recall_at_n": 0.6521739130434783,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.006062203479177649,
+      "top_k": [
+        [
+          "Alive",
+          true
+        ],
+        [
+          "The Grey",
+          true
+        ],
+        [
+          "Never Cry Wolf",
+          true
+        ],
+        [
+          "Into the Wild",
+          true
+        ],
+        [
+          "Walkabout",
+          true
+        ],
+        [
+          "The Edge",
+          true
+        ],
+        [
+          "Cast Away",
+          false
+        ],
+        [
+          "Wild",
+          true
+        ],
+        [
+          "The Martian",
+          false
+        ],
+        [
+          "127 Hours",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "music_biopic",
+      "n_relevant": 18,
+      "precision_at_k": 0.5,
+      "recall_at_n": 0.8333333333333334,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.004744333157617291,
+      "top_k": [
+        [
+          "Ray",
+          true
+        ],
+        [
+          "Walk Hard: The Dewey Cox Story",
+          false
+        ],
+        [
+          "Almost Famous",
+          false
+        ],
+        [
+          "Walk the Line",
+          true
+        ],
+        [
+          "Straight Outta Compton",
+          true
+        ],
+        [
+          "Get Him to the Greek",
+          false
+        ],
+        [
+          "Dreamgirls",
+          false
+        ],
+        [
+          "8 Mile",
+          false
+        ],
+        [
+          "The Buddy Holly Story",
+          true
+        ],
+        [
+          "The Doors",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "martial_arts",
+      "n_relevant": 98,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.6632653061224489,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.025830258302583026,
+      "top_k": [
+        [
+          "Warrior",
+          true
+        ],
+        [
+          "Jet Li's Fearless (Huo Yuan Jia)",
+          true
+        ],
+        [
+          "Crouching Tiger, Hidden Dragon (Wo hu cang long)",
+          true
+        ],
+        [
+          "Drunken Master (Jui kuen)",
+          true
+        ],
+        [
+          "Ip Man 2",
+          true
+        ],
+        [
+          "Hero (Ying xiong)",
+          true
+        ],
+        [
+          "The Legend of Drunken Master (Jui kuen II)",
+          true
+        ],
+        [
+          "The Karate Kid",
+          true
+        ],
+        [
+          "The Karate Kid",
+          true
+        ],
+        [
+          "Ong-Bak: The Thai Warrior (Ong Bak)",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "stoner",
+      "n_relevant": 88,
+      "precision_at_k": 0.4,
+      "recall_at_n": 0.18181818181818182,
+      "reciprocal_rank": 0.3333333333333333,
+      "random_precision": 0.02319451765946231,
+      "top_k": [
+        [
+          "Office Space",
+          false
+        ],
+        [
+          "Role Models",
+          false
+        ],
+        [
+          "The Hangover",
+          true
+        ],
+        [
+          "Tucker & Dale vs Evil",
+          false
+        ],
+        [
+          "Knocked Up",
+          true
+        ],
+        [
+          "Delicatessen",
+          false
+        ],
+        [
+          "Reality Bites",
+          false
+        ],
+        [
+          "Clerks",
+          true
+        ],
+        [
+          "Clerks II",
+          true
+        ],
+        [
+          "Shaun of the Dead",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "boxing",
+      "n_relevant": 22,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.8181818181818182,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.005798629414865577,
+      "top_k": [
+        [
+          "Warrior",
+          true
+        ],
+        [
+          "Rocky IV",
+          true
+        ],
+        [
+          "The Fighter",
+          true
+        ],
+        [
+          "Gladiator",
+          true
+        ],
+        [
+          "Rocky V",
+          true
+        ],
+        [
+          "Rocky Balboa",
+          true
+        ],
+        [
+          "Rocky III",
+          true
+        ],
+        [
+          "Rocky",
+          true
+        ],
+        [
+          "The Great White Hype",
+          true
+        ],
+        [
+          "Creed",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "submarine",
+      "n_relevant": 19,
+      "precision_at_k": 0.9,
+      "recall_at_n": 0.8947368421052632,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.005007907221929362,
+      "top_k": [
+        [
+          "Das Boot (Boat, The)",
+          true
+        ],
+        [
+          "U-571",
+          true
+        ],
+        [
+          "Lifeboat",
+          true
+        ],
+        [
+          "The Abyss",
+          true
+        ],
+        [
+          "Run Silent Run Deep",
+          true
+        ],
+        [
+          "20,000 Leagues Under the Sea",
+          true
+        ],
+        [
+          "K-19: The Widowmaker",
+          true
+        ],
+        [
+          "The Hunt for Red October",
+          true
+        ],
+        [
+          "Crimson Tide",
+          true
+        ],
+        [
+          "The Poseidon Adventure",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "pirates",
+      "n_relevant": 22,
+      "precision_at_k": 1.0,
+      "recall_at_n": 1.0,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.005798629414865577,
+      "top_k": [
+        [
+          "Pirates of the Caribbean: The Curse of the Black Pearl",
+          true
+        ],
+        [
+          "Pirates of the Caribbean: At World's End",
+          true
+        ],
+        [
+          "Pirates of the Caribbean: Dead Men Tell No Tales",
+          true
+        ],
+        [
+          "Pirates of the Caribbean: Dead Man's Chest",
+          true
+        ],
+        [
+          "Cutthroat Island",
+          true
+        ],
+        [
+          "Pirates of the Caribbean: On Stranger Tides",
+          true
+        ],
+        [
+          "The Adventures of Tintin",
+          true
+        ],
+        [
+          "Peter Pan",
+          true
+        ],
+        [
+          "Captain Phillips",
+          true
+        ],
+        [
+          "Swiss Family Robinson",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "con_artists",
+      "n_relevant": 42,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.7142857142857143,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.01107011070110701,
+      "top_k": [
+        [
+          "Confidence",
+          true
+        ],
+        [
+          "The Grifters",
+          true
+        ],
+        [
+          "Matchstick Men",
+          true
+        ],
+        [
+          "Dirty Rotten Scoundrels",
+          true
+        ],
+        [
+          "Catch Me If You Can",
+          true
+        ],
+        [
+          "House of Games",
+          true
+        ],
+        [
+          "Focus",
+          true
+        ],
+        [
+          "Nine Queens (Nueve reinas)",
+          true
+        ],
+        [
+          "The Spanish Prisoner",
+          true
+        ],
+        [
+          "American Hustle",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "quirky_small_town",
+      "n_relevant": 47,
+      "precision_at_k": 0.7,
+      "recall_at_n": 0.5106382978723404,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.012387981022667369,
+      "top_k": [
+        [
+          "The Station Agent",
+          true
+        ],
+        [
+          "Local Hero",
+          true
+        ],
+        [
+          "Pleasantville",
+          true
+        ],
+        [
+          "Ghost World",
+          true
+        ],
+        [
+          "Hot Fuzz",
+          true
+        ],
+        [
+          "The 'burbs",
+          false
+        ],
+        [
+          "Waitress",
+          true
+        ],
+        [
+          "Little Children",
+          true
+        ],
+        [
+          "Delicatessen",
+          false
+        ],
+        [
+          "American Splendor",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "midlife_crisis",
+      "n_relevant": 67,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.5223880597014925,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.017659462308908802,
+      "top_k": [
+        [
+          "Sideways",
+          true
+        ],
+        [
+          "The Seven Year Itch",
+          true
+        ],
+        [
+          "Revolutionary Road",
+          true
+        ],
+        [
+          "Husbands and Wives",
+          true
+        ],
+        [
+          "A Serious Man",
+          true
+        ],
+        [
+          "Up in the Air",
+          true
+        ],
+        [
+          "The First Wives Club",
+          true
+        ],
+        [
+          "A Single Man",
+          true
+        ],
+        [
+          "About Schmidt",
+          true
+        ],
+        [
+          "In Good Company",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "vietnam",
+      "n_relevant": 27,
+      "precision_at_k": 1.0,
+      "recall_at_n": 0.9629629629629629,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.007116499736425936,
+      "top_k": [
+        [
+          "Platoon",
+          true
+        ],
+        [
+          "Born on the Fourth of July",
+          true
+        ],
+        [
+          "Full Metal Jacket",
+          true
+        ],
+        [
+          "Good Morning, Vietnam",
+          true
+        ],
+        [
+          "The Fog of War: Eleven Lessons from the Life of Robert S. McNamara",
+          true
+        ],
+        [
+          "We Were Soldiers",
+          true
+        ],
+        [
+          "The Killing Fields",
+          true
+        ],
+        [
+          "Apocalypse Now",
+          true
+        ],
+        [
+          "The Deer Hunter",
+          true
+        ],
+        [
+          "Rambo: First Blood Part II",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "thinking_machines",
+      "n_relevant": 44,
+      "precision_at_k": 0.9,
+      "recall_at_n": 0.8863636363636364,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.011597258829731154,
+      "top_k": [
+        [
+          "Ex Machina",
+          true
+        ],
+        [
+          "I, Robot",
+          true
+        ],
+        [
+          "The Terminator",
+          true
+        ],
+        [
+          "2001: A Space Odyssey",
+          true
+        ],
+        [
+          "Transcendence",
+          true
+        ],
+        [
+          "The Matrix",
+          true
+        ],
+        [
+          "A.I. Artificial Intelligence",
+          true
+        ],
+        [
+          "Chappie",
+          true
+        ],
+        [
+          "Ghost in the Shell (K\u00f4kaku kid\u00f4tai)",
+          true
+        ],
+        [
+          "Altered States",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "dinosaurs",
+      "n_relevant": 48,
+      "precision_at_k": 0.8,
+      "recall_at_n": 0.5,
+      "reciprocal_rank": 1.0,
+      "random_precision": 0.012651555086979441,
+      "top_k": [
+        [
+          "King Kong",
+          true
+        ],
+        [
+          "The Creature from the Black Lagoon",
+          false
+        ],
+        [
+          "Dinosaur",
+          true
+        ],
+        [
+          "The Lost World: Jurassic Park",
+          true
+        ],
+        [
+          "Avatar",
+          true
+        ],
+        [
+          "Mimic",
+          true
+        ],
+        [
+          "Kong: Skull Island",
+          true
+        ],
+        [
+          "King Kong",
+          true
+        ],
+        [
+          "Ice Age: Dawn of the Dinosaurs",
+          true
+        ],
+        [
+          "Grizzly Man",
+          false
+        ]
+      ]
+    }
+  ]
+}
