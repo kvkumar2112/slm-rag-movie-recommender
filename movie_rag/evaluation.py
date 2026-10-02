@@ -6,7 +6,7 @@ anyone's taste: a movie is relevant if the genome scores *every* anchor tag >= m
 Query text never contains its anchor words (see tests), so a high score means the retriever
 understood the description rather than matched a keyword.
 
-This tests the retrieval stage only (profile -> embed -> Chroma). The SLM is bypassed.
+This tests the retrieval stage only (profile -> embed -> rank). The SLM is bypassed.
 """
 
 import json
@@ -17,6 +17,8 @@ import chromadb
 import pandas as pd
 
 from .embeddings import embed_queries
+from .genome import DEFAULT_TAGS_PER_PROFILE, GenomeIndex
+from .pipeline import rank
 
 EVAL_QUERIES_PATH = Path(__file__).parent / "data" / "eval_queries.json"
 MIN_RELEVANCE = 0.5
@@ -90,16 +92,30 @@ def evaluate(
     truth: dict[str, set[int]],
     k: int = 10,
     n: int = 100,
+    genome: GenomeIndex | None = None,
+    alpha: float = 1.0,
+    genome_tags: int = DEFAULT_TAGS_PER_PROFILE,
+    hide_anchors: bool = False,
 ) -> list[QueryResult]:
+    """Score each query with the same ranking the recommender uses.
+
+    hide_anchors=True removes each query's anchor tags from genome scoring. The ground truth is
+    defined by those tags, so this is the leak-free estimate for genome-based ranking.
+    """
     total = collection.count()
-    result = collection.query(
-        query_embeddings=embed_queries([q.profile for q in queries]),
-        n_results=min(n, total),
-        include=["metadatas"],
-    )
     results = []
-    for q, ids, metadatas in zip(queries, result["ids"], result["metadatas"]):
-        ranked = [int(i) for i in ids]
+    for q, embedding in zip(queries, embed_queries([q.profile for q in queries])):
+        ranked_movies = rank(
+            collection,
+            embedding,
+            genome=genome,
+            alpha=alpha,
+            genome_tags=genome_tags,
+            hidden_tags=tuple(q.anchor_tags) if hide_anchors else (),
+            limit=n,
+            with_documents=False,
+        )
+        ranked = [r.movie_id for r in ranked_movies]
         relevant = truth[q.id]
         results.append(
             QueryResult(
@@ -109,7 +125,7 @@ def evaluate(
                 recall_at_n=recall_at_n(ranked, relevant, n),
                 reciprocal_rank=reciprocal_rank(ranked, relevant),
                 random_precision=len(relevant) / total,
-                top_k=[(m["title"], movie_id in relevant) for movie_id, m in zip(ranked[:k], metadatas[:k])],
+                top_k=[(r.metadata["title"], r.movie_id in relevant) for r in ranked_movies[:k]],
             )
         )
     return results

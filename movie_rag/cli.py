@@ -67,12 +67,29 @@ def cmd_build(args: argparse.Namespace) -> None:
     collection = build_catalog(movies)
     print(f"Indexed {collection.count()} movies into '{collection.name}'.")
 
+    from .config import DB_PATH
+    from .genome import GENOME_FILE, build_genome_index
+
+    genome_path = DB_PATH / GENOME_FILE
+    genome_path.unlink(missing_ok=True)  # it must cover exactly the movies just indexed
+    if args.source == "mongo":
+        if (args.genome_dir / "genome-scores.csv").exists():
+            build_genome_index([m.movie_id for m in movies], args.genome_dir).save(genome_path)
+            print(f"Built the genome index for genome-blended ranking: {genome_path}")
+        else:
+            print(f"No tag genome in {args.genome_dir}; ranking will be text-only. (ingest-movielens --dataset ml-25m adds it.)")
+
 
 def cmd_recommend(args: argparse.Namespace) -> None:
     from .pipeline import recommend
 
     profile, recs = recommend(
-        args.query, n_results=args.n, min_year=args.min_year, max_year=args.max_year, min_rating=args.min_rating
+        args.query,
+        n_results=args.n,
+        min_year=args.min_year,
+        max_year=args.max_year,
+        min_rating=args.min_rating,
+        alpha=args.alpha,
     )
     print(f"\nRationale:      {profile.rationale}")
     print(f"Target profile: {profile.target_profile}\n")
@@ -81,7 +98,7 @@ def cmd_recommend(args: argparse.Namespace) -> None:
     for i, rec in enumerate(recs, start=1):
         year = f" ({rec.year})" if rec.year else ""
         rating = f"  rating={rec.rating_mean:.2f} ({rec.rating_count})" if rec.rating_mean is not None else ""
-        print(f"{i}. {rec.title}{year} [{rec.genres}]  similarity={rec.similarity:.3f}{rating}")
+        print(f"{i}. {rec.title}{year} [{rec.genres}]  score={rec.score:.2f} similarity={rec.similarity:.3f}{rating}")
         if args.show_docs:
             print(f"   {rec.document}\n")
 
@@ -91,16 +108,23 @@ def cmd_eval(args: argparse.Namespace) -> None:
     from dataclasses import asdict
 
     from .catalog import get_collection
-    from .config import EMBEDDING_MODEL
+    from .config import DB_PATH, EMBEDDING_MODEL
     from .evaluation import evaluate, ground_truth, load_queries, summarize
+    from .genome import load_genome_index
 
     collection = get_collection()
+    genome = load_genome_index(DB_PATH)
+    if genome is None and args.alpha < 1:
+        raise SystemExit("No genome index for this Chroma index. Rebuild with `movie-rag build --source mongo`, or pass --alpha 1.")
     candidate_ids = {int(i) for i in collection.get(include=[])["ids"]}
     queries = load_queries()
     truth = ground_truth(queries, args.genome_dir, candidate_ids, args.min_relevance)
     if not any(truth.values()):
         raise SystemExit("No relevant movies found. Build the index from MongoDB with ml-25m data first.")
-    results = evaluate(collection, queries, truth, k=args.k, n=args.n)
+    results = evaluate(
+        collection, queries, truth, k=args.k, n=args.n,
+        genome=genome, alpha=args.alpha, genome_tags=args.genome_tags, hide_anchors=args.hide_anchors,
+    )
     summary = summarize(results)
 
     print(f"{'query':<22}{'relevant':>9}{f'P@{args.k}':>8}{f'R@{args.n}':>8}{'RR':>7}{'random':>8}")
@@ -122,6 +146,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
             "embedding_model": EMBEDDING_MODEL,
             "indexed_movies": len(candidate_ids),
             "k": args.k, "n": args.n, "min_relevance": args.min_relevance,
+            "alpha": args.alpha, "genome_tags": args.genome_tags, "hide_anchors": args.hide_anchors,
             "summary": summary,
             "queries": [asdict(r) for r in results],
         }
@@ -166,7 +191,9 @@ def main() -> None:
     parser.add_argument("-v", "--verbose", action="store_true")
     sub = parser.add_subparsers(dest="command", required=True)
 
+    from .genome import DEFAULT_TAGS_PER_PROFILE
     from .ingest.movielens import DATASETS
+    from .pipeline import DEFAULT_ALPHA
 
     p = sub.add_parser("ingest-movielens", help="Download a MovieLens dataset and upsert it into MongoDB")
     p.add_argument(
@@ -188,6 +215,7 @@ def main() -> None:
 
     p = sub.add_parser("build", help="Phase 1: embed the catalog into ChromaDB")
     add_source_args(p)
+    p.add_argument("--genome-dir", type=Path, default=DATA_DIR / "raw" / "ml-25m", help="dir with genome-*.csv")
     p.set_defaults(func=cmd_build)
 
     p = sub.add_parser("recommend", help="Phase 3: recommend movies for a free-text request")
@@ -196,6 +224,7 @@ def main() -> None:
     p.add_argument("--min-year", type=int)
     p.add_argument("--max-year", type=int)
     p.add_argument("--min-rating", type=float, help="minimum MovieLens mean rating, 0.5-5 (mongo-built index only)")
+    p.add_argument("--alpha", type=float, default=DEFAULT_ALPHA, help="text weight vs genome score; 1 = text only")
     p.add_argument("--show-docs", action="store_true", help="print the embedded text of each result")
     p.set_defaults(func=cmd_recommend)
 
@@ -204,6 +233,9 @@ def main() -> None:
     p.add_argument("-k", type=int, default=10, help="precision cutoff")
     p.add_argument("-n", type=int, default=100, help="recall cutoff")
     p.add_argument("--min-relevance", type=float, default=0.5, help="genome score that makes a movie relevant")
+    p.add_argument("--alpha", type=float, default=DEFAULT_ALPHA, help="text weight vs genome score; 1 = text only")
+    p.add_argument("--genome-tags", type=int, default=DEFAULT_TAGS_PER_PROFILE, help="implied genome tags per profile")
+    p.add_argument("--hide-anchors", action="store_true", help="leak-free check: hide each query's anchor tags from genome scoring")
     p.add_argument("--details", action="store_true", help="show each query's top-k with hits marked")
     p.add_argument("--label", default="", help="name for this run in the saved report")
     p.add_argument("--out", type=Path, help="save a JSON report, e.g. data/eval/baseline.json")

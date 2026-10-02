@@ -27,6 +27,7 @@ database of **real** movies. So it can't recommend a film that doesn't exist.
 | – | Catalog enrichment to close "embedding voids" | ✅ script ready, needs `OPENAI_API_KEY` |
 | – | Real data: MovieLens ratings + tags and TMDb plots/keywords/credits → MongoDB → Chroma | ✅ see [docs/DATA_PIPELINE.md](docs/DATA_PIPELINE.md) |
 | – | Retrieval evaluation: 30 genome-labelled queries, P@10 / R@100 / MRR | ✅ see [docs/EVALUATION.md](docs/EVALUATION.md) |
+| – | Genome-blended ranking: text similarity + tag-genome score (P@10 0.56 → 0.76) | ✅ default when built from MongoDB with ml-25m |
 | – | QLoRA finetuning + serving the real SLM | ⏳ next |
 
 ## Setup

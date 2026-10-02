@@ -152,8 +152,9 @@ movie-rag recommend "I love My Cousin Vinny and Ferris Bueller" --min-year 1985 
 1. The SLM writes a target profile (currently a mock).
 2. The profile is embedded with the same model as the catalog. This is required: vectors from
    different models aren't comparable.
-3. Chroma returns the nearest movies by cosine similarity, but only among those passing the
-   `where` filter, e.g. `{"$and": [{"year": {"$gte": 1985}}, {"year": {"$lte": 1995}}, {"rating_mean": {"$gte": 3.8}}]}`.
+3. Chroma scores the movies passing the `where` filter by cosine similarity, and that is blended
+   with a tag-genome score (see [EVALUATION.md](EVALUATION.md#genome-blended-ranking)). A
+   filter looks like `{"$and": [{"year": {"$gte": 1985}}, {"year": {"$lte": 1995}}, {"rating_mean": {"$gte": 3.8}}]}`.
 4. Movies the user named are dropped.
 
 `--show-docs` prints the exact text each result was matched on, which is the first thing to

@@ -4,13 +4,18 @@ import re
 from dataclasses import dataclass
 
 import chromadb
+import numpy as np
 
 from .catalog import get_collection
+from .config import DB_PATH
 from .embeddings import embed_queries
+from .genome import DEFAULT_TAGS_PER_PROFILE, GenomeIndex, load_genome_index
 from .schemas import TargetProfile
 from .slm import SLMGenerator, generate_target_profile, mock_slm_generate
 
 LEADING_ARTICLES = {"the", "a", "an"}
+# Weight of text similarity vs genome score in the blended ranking (1.0 = text only).
+DEFAULT_ALPHA = 0.7
 
 
 @dataclass
@@ -18,8 +23,9 @@ class Recommendation:
     title: str
     year: int | None
     genres: str
-    similarity: float
+    similarity: float  # cosine similarity of profile and catalog text
     document: str
+    score: float = 0.0  # blended ranking score (z-scored, only comparable within one query)
     rating_mean: float | None = None
     rating_count: int | None = None
 
@@ -69,6 +75,56 @@ def is_mentioned(title: str, user_input: str) -> bool:
     return len(words) > 2 and f" {' '.join(words[:2])} " in haystack
 
 
+@dataclass
+class Ranked:
+    movie_id: int
+    metadata: dict
+    document: str | None
+    similarity: float
+    score: float
+
+
+def _zscore(values: np.ndarray) -> np.ndarray:
+    return (values - values.mean()) / (values.std() + 1e-6)
+
+
+def rank(
+    collection: chromadb.Collection,
+    query_embedding: list[float],
+    *,
+    where: dict | None = None,
+    genome: GenomeIndex | None = None,
+    alpha: float = DEFAULT_ALPHA,
+    genome_tags: int = DEFAULT_TAGS_PER_PROFILE,
+    hidden_tags: tuple[str, ...] = (),
+    limit: int = 100,
+    with_documents: bool = True,
+) -> list[Ranked]:
+    """Rank indexed movies for one query embedding: text similarity, blended with the genome
+    score when a genome index is given and alpha < 1.
+
+    Every movie passing `where` is scored, because a strong genome match can sit far down the
+    text ranking. Fine at tens of thousands of movies; past that, rerank a text shortlist.
+    """
+    include = ["metadatas", "distances"] + (["documents"] if with_documents else [])
+    result = collection.query(query_embeddings=[query_embedding], n_results=collection.count(), where=where, include=include)
+    ids = [int(i) for i in result["ids"][0]]
+    if not ids:
+        return []
+    similarity = 1 - np.array(result["distances"][0])
+    documents = result["documents"][0] if with_documents else [None] * len(ids)
+
+    if genome is not None and alpha < 1:
+        by_movie = genome.score(query_embedding, genome_tags, hidden_tags)
+        genome_scores = np.array([by_movie.get(movie_id, 0.0) for movie_id in ids])
+        score = alpha * _zscore(similarity) + (1 - alpha) * _zscore(genome_scores)
+    else:
+        score = similarity
+
+    order = np.argsort(-score)[:limit]
+    return [Ranked(ids[i], result["metadatas"][0][i], documents[i], float(similarity[i]), float(score[i])) for i in order]
+
+
 def recommend(
     user_input: str,
     *,
@@ -76,34 +132,42 @@ def recommend(
     min_year: int | None = None,
     max_year: int | None = None,
     min_rating: float | None = None,
+    alpha: float = DEFAULT_ALPHA,
     collection: chromadb.Collection | None = None,
+    genome: GenomeIndex | None = None,
     generator: SLMGenerator = mock_slm_generate,
 ) -> tuple[TargetProfile, list[Recommendation]]:
-    collection = collection or get_collection()
+    """Recommend real movies. Uses the genome index saved by `movie-rag build` unless one is
+    passed in; without one (e.g. the JSON mock catalog) ranking is text-only."""
+    if collection is None:
+        collection = get_collection()
+        genome = genome or load_genome_index(DB_PATH)
     profile = generate_target_profile(user_input, generator)
 
     # Over-fetch so dropping the movies the user already named still leaves n_results.
-    result = collection.query(
-        query_embeddings=embed_queries([profile.target_profile]),
-        n_results=min(n_results + 10, collection.count()),
+    ranked = rank(
+        collection,
+        embed_queries([profile.target_profile])[0],
         where=build_where(min_year, max_year, min_rating),
+        genome=genome,
+        alpha=alpha,
+        limit=n_results + 10,
     )
 
     recommendations = []
-    for metadata, distance, document in zip(
-        result["metadatas"][0], result["distances"][0], result["documents"][0]
-    ):
-        if is_mentioned(metadata["title"], user_input):
+    for r in ranked:
+        if is_mentioned(r.metadata["title"], user_input):
             continue
         recommendations.append(
             Recommendation(
-                title=metadata["title"],
-                year=metadata.get("year"),
-                genres=metadata["genres"],
-                similarity=1 - distance,
-                document=document,
-                rating_mean=metadata.get("rating_mean"),
-                rating_count=metadata.get("rating_count"),
+                title=r.metadata["title"],
+                year=r.metadata.get("year"),
+                genres=r.metadata["genres"],
+                similarity=r.similarity,
+                document=r.document,
+                score=r.score,
+                rating_mean=r.metadata.get("rating_mean"),
+                rating_count=r.metadata.get("rating_count"),
             )
         )
         if len(recommendations) == n_results:
