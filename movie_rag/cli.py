@@ -86,6 +86,49 @@ def cmd_recommend(args: argparse.Namespace) -> None:
             print(f"   {rec.document}\n")
 
 
+def cmd_eval(args: argparse.Namespace) -> None:
+    import json
+    from dataclasses import asdict
+
+    from .catalog import get_collection
+    from .config import EMBEDDING_MODEL
+    from .evaluation import evaluate, ground_truth, load_queries, summarize
+
+    collection = get_collection()
+    candidate_ids = {int(i) for i in collection.get(include=[])["ids"]}
+    queries = load_queries()
+    truth = ground_truth(queries, args.genome_dir, candidate_ids, args.min_relevance)
+    if not any(truth.values()):
+        raise SystemExit("No relevant movies found. Build the index from MongoDB with ml-25m data first.")
+    results = evaluate(collection, queries, truth, k=args.k, n=args.n)
+    summary = summarize(results)
+
+    print(f"{'query':<22}{'relevant':>9}{f'P@{args.k}':>8}{f'R@{args.n}':>8}{'RR':>7}{'random':>8}")
+    for r in results:
+        print(f"{r.id:<22}{r.n_relevant:>9}{r.precision_at_k:>8.2f}{r.recall_at_n:>8.2f}{r.reciprocal_rank:>7.2f}{r.random_precision:>8.3f}")
+        if args.details:
+            for title, hit in r.top_k:
+                print(f"{'':<4}{'✓' if hit else '·'} {title}")
+    print(
+        f"{'MEAN':<22}{'':>9}{summary['precision_at_k']:>8.3f}{summary['recall_at_n']:>8.3f}"
+        f"{summary['mrr']:>7.3f}{summary['random_precision']:>8.3f}"
+    )
+    print(f"\n{len(candidate_ids)} movies indexed. Lift over random P@{args.k}: {summary['precision_at_k'] / summary['random_precision']:.1f}x")
+
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        report = {
+            "label": args.label,
+            "embedding_model": EMBEDDING_MODEL,
+            "indexed_movies": len(candidate_ids),
+            "k": args.k, "n": args.n, "min_relevance": args.min_relevance,
+            "summary": summary,
+            "queries": [asdict(r) for r in results],
+        }
+        args.out.write_text(json.dumps(report, indent=2))
+        print(f"Saved to {args.out}")
+
+
 def cmd_generate_data(args: argparse.Namespace) -> None:
     from .teacher import generate_training_data
 
@@ -155,6 +198,16 @@ def main() -> None:
     p.add_argument("--min-rating", type=float, help="minimum MovieLens mean rating, 0.5-5 (mongo-built index only)")
     p.add_argument("--show-docs", action="store_true", help="print the embedded text of each result")
     p.set_defaults(func=cmd_recommend)
+
+    p = sub.add_parser("eval", help="Score retrieval on the genome-labelled query set")
+    p.add_argument("--genome-dir", type=Path, default=DATA_DIR / "raw" / "ml-25m", help="dir with genome-*.csv")
+    p.add_argument("-k", type=int, default=10, help="precision cutoff")
+    p.add_argument("-n", type=int, default=100, help="recall cutoff")
+    p.add_argument("--min-relevance", type=float, default=0.5, help="genome score that makes a movie relevant")
+    p.add_argument("--details", action="store_true", help="show each query's top-k with hits marked")
+    p.add_argument("--label", default="", help="name for this run in the saved report")
+    p.add_argument("--out", type=Path, help="save a JSON report, e.g. data/eval/baseline.json")
+    p.set_defaults(func=cmd_eval)
 
     p = sub.add_parser("generate-data", help="Phase 2: teacher-labelled ChatML data for QLoRA")
     add_source_args(p)

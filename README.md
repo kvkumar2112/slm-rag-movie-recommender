@@ -26,6 +26,7 @@ database of **real** movies. So it can't recommend a film that doesn't exist.
 | 3 | Inference pipeline: input → SLM → embed → filtered vector search → top 3 | ✅ SLM is **mocked** (fixed sample output) |
 | – | Catalog enrichment to close "embedding voids" | ✅ script ready, needs `OPENAI_API_KEY` |
 | – | Real data: MovieLens ratings + tags and TMDb plots/keywords/credits → MongoDB → Chroma | ✅ see [docs/DATA_PIPELINE.md](docs/DATA_PIPELINE.md) |
+| – | Retrieval evaluation: 30 genome-labelled queries, P@10 / R@100 / MRR | ✅ see [docs/EVALUATION.md](docs/EVALUATION.md) |
 | – | QLoRA finetuning + serving the real SLM | ⏳ next |
 
 ## Setup
@@ -56,6 +57,7 @@ movie-rag -v ingest-tmdb --limit 2000          # needs TMDB_ACCESS_TOKEN; resuma
 movie-rag stats                                # what's in MongoDB
 movie-rag build --source mongo --min-ratings 10
 movie-rag recommend "I love My Cousin Vinny and Ferris Bueller" --min-rating 3.5 --show-docs
+movie-rag eval --details                       # score retrieval (needs ml-25m), see docs/EVALUATION.md
 ```
 
 `generate-data` and `enrich` also take `--source mongo` (`enrich` then writes back to MongoDB).
