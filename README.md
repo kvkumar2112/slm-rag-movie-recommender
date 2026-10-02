@@ -25,12 +25,13 @@ database of **real** movies. So it can't recommend a film that doesn't exist.
 | 2 | Teacher LLM (GPT-4o) generates ChatML training data for QLoRA | ✅ script ready, needs `OPENAI_API_KEY` |
 | 3 | Inference pipeline: input → SLM → embed → filtered vector search → top 3 | ✅ SLM is **mocked** (fixed sample output) |
 | – | Catalog enrichment to close "embedding voids" | ✅ script ready, needs `OPENAI_API_KEY` |
+| – | Real data: MovieLens ratings + tags and TMDb plots/keywords/credits → MongoDB → Chroma | ✅ see [docs/DATA_PIPELINE.md](docs/DATA_PIPELINE.md) |
 | – | QLoRA finetuning + serving the real SLM | ⏳ next |
-| – | Real MovieLens/TMDb catalog | ⏳ next |
 
 ## Setup
 
-Requires Python 3.10+.
+Requires Python 3.10+ and, for real data, a local MongoDB
+(`brew tap mongodb/brew && brew install mongodb-community && brew services start mongodb-community`).
 
 ```bash
 python3.12 -m venv .venv
@@ -41,7 +42,25 @@ pip install -e ".[dev]"
 On Intel Macs, `pyproject.toml` automatically pins `torch==2.2.2` / `numpy<2` /
 `transformers<4.50` (PyTorch no longer ships newer Intel-Mac builds).
 
+Copy `.env.example` to `.env` for MongoDB, TMDb and OpenAI settings.
+
 ## Usage
+
+### Real data (MovieLens + TMDb → MongoDB → Chroma)
+
+How it works and why: [docs/DATA_PIPELINE.md](docs/DATA_PIPELINE.md).
+
+```bash
+movie-rag ingest-movielens                     # ml-latest-small; --dataset ml-25m adds the tag genome
+movie-rag -v ingest-tmdb --limit 2000          # needs TMDB_ACCESS_TOKEN; resumable, most-rated first
+movie-rag stats                                # what's in MongoDB
+movie-rag build --source mongo --min-ratings 10
+movie-rag recommend "I love My Cousin Vinny and Ferris Bueller" --min-rating 3.5 --show-docs
+```
+
+`generate-data` and `enrich` also take `--source mongo` (`enrich` then writes back to MongoDB).
+
+### Bundled mock catalog (no MongoDB needed)
 
 ```bash
 # Phase 1: embed the catalog into ./chroma_db (set MOVIE_RAG_DB_PATH to change)
@@ -62,7 +81,8 @@ movie-rag build --catalog data/movies_enriched.json
 
 Set `MOVIE_RAG_TEACHER_MODEL` to use a different teacher model.
 
-Run tests with `pytest` (the end-to-end tests download the ~90 MB embedding model once).
+Run tests with `pytest`. The end-to-end tests download the ~90 MB embedding model once; the
+ingest tests use throwaway `movie_rag_test_*` databases on the local MongoDB and skip if it isn't running.
 
 ## How it works
 

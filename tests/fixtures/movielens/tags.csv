@@ -1,0 +1,9 @@
+userId,movieId,tag,timestamp
+1,1,Sci-Fi,1445714994
+2,1,sci fi,1445714994
+3,1,scifi,1445714994
+3,1,sci-fi,1445714995
+1,1,cyberpunk,1445714994
+2,1,  Cyberpunk. ,1445714994
+1,2,courtroom,1445714994
+1,2,x,1445714994

@@ -9,13 +9,14 @@ import json
 import logging
 import os
 import random
+from collections.abc import Callable
 from pathlib import Path
 from typing import TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from .catalog import Movie, load_movies, save_movies
-from .config import CATALOG_PATH, TEACHER_MODEL
+from .catalog import Movie
+from .config import TEACHER_MODEL
 from .prompts import ENRICH_SYSTEM_PROMPT, TEACHER_SYSTEM_PROMPT, build_user_prompt
 from .schemas import TargetProfile, VibeDescription
 
@@ -50,9 +51,12 @@ def ask_teacher(client, system: str, user: str, schema: type[T], model: str = TE
 
 
 def describe_for_teacher(movie: Movie) -> str:
-    line = f"- {movie.title} ({movie.year}). Genres: {', '.join(movie.genres)}."
+    year = f" ({movie.year})" if movie.year else ""
+    line = f"- {movie.title}{year}. Genres: {', '.join(movie.genres)}."
     if movie.summary:
         line += f" {movie.summary}"
+    if movie.tags:
+        line += f" Viewer tags: {', '.join(movie.tags[:8])}."
     return line
 
 
@@ -80,15 +84,14 @@ def to_chatml(user_prompt: str, profile: TargetProfile) -> dict:
 
 
 def generate_training_data(
+    movies: list[Movie],
     out_path: Path,
     n_examples: int,
-    catalog_path: Path = CATALOG_PATH,
     model: str = TEACHER_MODEL,
     seed: int = 0,
 ) -> int:
     """Write teacher-labelled ChatML examples to `out_path` (JSONL). Returns how many were written."""
     rng = random.Random(seed)
-    movies = load_movies(catalog_path)
     client = _client()
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -110,27 +113,28 @@ def generate_training_data(
     return written
 
 
-def enrich_catalog(
-    out_path: Path,
-    catalog_path: Path = CATALOG_PATH,
+def enrich_movies(
+    movies: list[Movie],
+    on_enriched: Callable[[Movie], None],
     model: str = TEACHER_MODEL,
     force: bool = False,
 ) -> int:
-    """Add a teacher-written `vibe_description` to each movie. Returns how many were enriched."""
-    movies = load_movies(catalog_path)
+    """Add a teacher-written `vibe_description` to each movie and hand it to `on_enriched`
+    (which saves it). Returns how many were enriched."""
     client = _client()
     enriched = 0
     for movie in movies:
         if movie.vibe_description and not force:
             continue
-        mechanics = f" Known mechanics: {', '.join(movie.mechanics)}." if movie.mechanics else ""
+        hints = [*movie.mechanics, *movie.tags, *movie.keywords]
+        known = f" Known mechanics and tags: {', '.join(hints)}." if hints else ""
         try:
-            result = ask_teacher(client, ENRICH_SYSTEM_PROMPT, describe_for_teacher(movie) + mechanics, VibeDescription, model)
+            result = ask_teacher(client, ENRICH_SYSTEM_PROMPT, describe_for_teacher(movie) + known, VibeDescription, model)
         except ValueError as e:
             logger.error("Skipping %s: %s", movie.title, e)
             continue
         movie.vibe_description = result.vibe_description
+        on_enriched(movie)
         enriched += 1
         logger.info("Enriched %s", movie.title)
-    save_movies(movies, out_path)
     return enriched

@@ -1,4 +1,8 @@
-"""Phase 1: build the `movie_catalog` ChromaDB collection from a JSON movie list."""
+"""Phase 1: build the `movie_catalog` ChromaDB collection.
+
+Movies come either from the bundled JSON mock catalog or from MongoDB (see store.py). Chroma is
+a derived index: rebuild it any time the source data or the embedding model changes.
+"""
 
 import json
 from dataclasses import dataclass, field
@@ -9,43 +13,72 @@ import chromadb
 from .config import CATALOG_PATH, COLLECTION_NAME, DB_PATH
 from .embeddings import embed
 
+# Chroma rejects very large single inserts, so documents are added in batches.
+ADD_BATCH_SIZE = 1000
+
 
 @dataclass
 class Movie:
     movie_id: int
     title: str
-    year: int
+    year: int | None
     genres: list[str]
     mechanics: list[str] = field(default_factory=list)
     summary: str = ""
     # Filled in by `movie-rag enrich`; richer vocabulary closes "embedding voids".
     vibe_description: str | None = None
+    # From MovieLens (tags, ratings) and TMDb (keywords, tagline, credits).
+    tags: list[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
+    tagline: str | None = None
+    directors: list[str] = field(default_factory=list)
+    cast: list[str] = field(default_factory=list)
+    rating_mean: float | None = None
+    rating_count: int | None = None
+    tmdb_id: int | None = None
 
     @property
     def metadata_string(self) -> str:
         """The text that gets embedded, e.g.
         'Midnight Run (1988). Genres: Comedy, Crime. Mechanics: road trip, ex-cop, ...'
+
+        all-MiniLM-L6-v2 truncates at 256 tokens, so the parts that describe the *feel* of a
+        movie come first and credits come last.
         """
-        parts = [
-            f"{self.title} ({self.year}).",
-            f"Genres: {', '.join(self.genres)}.",
-        ]
+        parts = [f"{self.title} ({self.year})." if self.year else f"{self.title}."]
+        if self.genres:
+            parts.append(f"Genres: {', '.join(self.genres)}.")
         if self.mechanics:
             parts.append(f"Mechanics: {', '.join(self.mechanics)}.")
-        if self.summary:
-            parts.append(f"Plot: {self.summary}")
         if self.vibe_description:
             parts.append(f"Vibe: {self.vibe_description}")
+        if self.tags:
+            parts.append(f"Tags: {', '.join(self.tags)}.")
+        if self.keywords:
+            parts.append(f"Keywords: {', '.join(self.keywords)}.")
+        if self.tagline:
+            parts.append(f"Tagline: {self.tagline}")
+        if self.summary:
+            parts.append(f"Plot: {self.summary}")
+        if self.directors:
+            parts.append(f"Directed by {', '.join(self.directors)}.")
+        if self.cast:
+            parts.append(f"Starring {', '.join(self.cast)}.")
         return " ".join(parts)
 
     def chroma_metadata(self) -> dict:
-        # Chroma metadata values must be scalars, so genres are stored as a string.
-        return {
+        # Chroma metadata values must be non-null scalars, so genres become a string and
+        # missing values are left out (a filter on a missing field simply doesn't match).
+        metadata = {
             "movie_id": self.movie_id,
             "title": self.title,
             "year": self.year,
             "genres": ", ".join(self.genres),
+            "rating_mean": self.rating_mean,
+            "rating_count": self.rating_count,
+            "tmdb_id": self.tmdb_id,
         }
+        return {k: v for k, v in metadata.items() if v is not None}
 
 
 def load_movies(path: Path = CATALOG_PATH) -> list[Movie]:
@@ -80,10 +113,13 @@ def build_catalog(movies: list[Movie], client: chromadb.ClientAPI | None = None)
     )
 
     documents = [m.metadata_string for m in movies]
-    collection.add(
-        ids=[str(m.movie_id) for m in movies],
-        embeddings=embed(documents),
-        documents=documents,
-        metadatas=[m.chroma_metadata() for m in movies],
-    )
+    embeddings = embed(documents, show_progress=len(documents) > 200)
+    for start in range(0, len(movies), ADD_BATCH_SIZE):
+        end = start + ADD_BATCH_SIZE
+        collection.add(
+            ids=[str(m.movie_id) for m in movies[start:end]],
+            embeddings=embeddings[start:end],
+            documents=documents[start:end],
+            metadatas=[m.chroma_metadata() for m in movies[start:end]],
+        )
     return collection

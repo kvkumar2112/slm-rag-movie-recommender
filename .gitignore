@@ -10,8 +10,9 @@ dist/
 .venv/
 venv/
 
-# Local vector DB and generated training data
+# Local vector DB, downloaded datasets and generated training data
 chroma_db/
+data/raw/
 data/training/
 
 # Secrets

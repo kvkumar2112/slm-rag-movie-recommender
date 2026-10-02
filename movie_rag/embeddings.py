@@ -11,7 +11,7 @@ def get_model():
     return SentenceTransformer(EMBEDDING_MODEL)
 
 
-def embed(texts: list[str]) -> list[list[float]]:
+def embed(texts: list[str], show_progress: bool = False) -> list[list[float]]:
     """Embed texts with all-MiniLM-L6-v2. Catalog entries and target profiles must use this same function."""
-    vectors = get_model().encode(texts, normalize_embeddings=True, show_progress_bar=False)
+    vectors = get_model().encode(texts, normalize_embeddings=True, show_progress_bar=show_progress)
     return vectors.tolist()

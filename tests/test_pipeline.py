@@ -5,16 +5,17 @@ import chromadb
 import pytest
 
 from movie_rag.catalog import build_catalog, load_movies
-from movie_rag.pipeline import is_mentioned, recommend, year_filter
+from movie_rag.pipeline import build_where, is_mentioned, recommend
 from movie_rag.prompts import build_user_prompt
 from movie_rag.teacher import random_pairs
 
 
-def test_year_filter_shapes():
-    assert year_filter() is None
-    assert year_filter(min_year=1990) == {"year": {"$gte": 1990}}
-    assert year_filter(max_year=1999) == {"year": {"$lte": 1999}}
-    assert year_filter(1990, 1999) == {"$and": [{"year": {"$gte": 1990}}, {"year": {"$lte": 1999}}]}
+def test_build_where_shapes():
+    assert build_where() is None
+    assert build_where(min_year=1990) == {"year": {"$gte": 1990}}
+    assert build_where(max_year=1999) == {"year": {"$lte": 1999}}
+    assert build_where(1990, 1999) == {"$and": [{"year": {"$gte": 1990}}, {"year": {"$lte": 1999}}]}
+    assert build_where(min_rating=4.0) == {"rating_mean": {"$gte": 4.0}}
 
 
 @pytest.mark.parametrize(

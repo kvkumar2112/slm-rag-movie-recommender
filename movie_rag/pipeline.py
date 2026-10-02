@@ -16,23 +16,32 @@ LEADING_ARTICLES = {"the", "a", "an"}
 @dataclass
 class Recommendation:
     title: str
-    year: int
+    year: int | None
     genres: str
     similarity: float
     document: str
+    rating_mean: float | None = None
+    rating_count: int | None = None
 
 
-def year_filter(min_year: int | None = None, max_year: int | None = None) -> dict | None:
-    """Build a Chroma `where` clause restricting results to a year range.
+def build_where(
+    min_year: int | None = None,
+    max_year: int | None = None,
+    min_rating: float | None = None,
+) -> dict | None:
+    """Build a Chroma `where` clause from hard filters.
 
     Chroma allows only one operator per field expression, so a closed range has to be an
     `$and` of two conditions rather than {"year": {"$gte": a, "$lte": b}}.
+    `min_rating` uses the MovieLens mean rating (0.5-5), so it only matches Mongo-built catalogs.
     """
     conditions = []
     if min_year is not None:
         conditions.append({"year": {"$gte": min_year}})
     if max_year is not None:
         conditions.append({"year": {"$lte": max_year}})
+    if min_rating is not None:
+        conditions.append({"rating_mean": {"$gte": min_rating}})
     if not conditions:
         return None
     if len(conditions) == 1:
@@ -66,6 +75,7 @@ def recommend(
     n_results: int = 3,
     min_year: int | None = None,
     max_year: int | None = None,
+    min_rating: float | None = None,
     collection: chromadb.Collection | None = None,
     generator: SLMGenerator = mock_slm_generate,
 ) -> tuple[TargetProfile, list[Recommendation]]:
@@ -76,7 +86,7 @@ def recommend(
     result = collection.query(
         query_embeddings=embed([profile.target_profile]),
         n_results=min(n_results + 10, collection.count()),
-        where=year_filter(min_year, max_year),
+        where=build_where(min_year, max_year, min_rating),
     )
 
     recommendations = []
@@ -88,10 +98,12 @@ def recommend(
         recommendations.append(
             Recommendation(
                 title=metadata["title"],
-                year=metadata["year"],
+                year=metadata.get("year"),
                 genres=metadata["genres"],
                 similarity=1 - distance,
                 document=document,
+                rating_mean=metadata.get("rating_mean"),
+                rating_count=metadata.get("rating_count"),
             )
         )
         if len(recommendations) == n_results:
