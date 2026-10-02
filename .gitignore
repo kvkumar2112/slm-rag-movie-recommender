@@ -22,3 +22,6 @@ data/training/
 .vscode/
 *.swp
 .DS_Store
+
+# Old Django prototype local DB
+db.sqlite3
