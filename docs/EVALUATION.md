@@ -41,8 +41,21 @@ movie-rag eval --label "bge-small" --out data/eval/bge-small.json   # save a rep
 | Run | P@10 | R@100 | MRR | Report |
 |---|---|---|---|---|
 | all-MiniLM-L6-v2, ml-25m genome + TMDb, generic tags dropped | 0.567 | 0.455 | 0.796 | [baseline-minilm.json](../data/eval/baseline-minilm.json) |
+| bge-small-en-v1.5, same catalog text, with query prefix | 0.560 | 0.494 | 0.810 | [bge-small.json](../data/eval/bge-small.json) |
+| bge-small-en-v1.5, same catalog text, no query prefix | 0.577 | 0.506 | 0.828 | [bge-small-noprefix.json](../data/eval/bge-small-noprefix.json) |
 
 Random P@10 is 0.016, so the baseline is 35× better than chance.
+
+**bge-small vs MiniLM:** a wash on P@10 (13 queries better, 12 worse, 5 the same) and a
+modest gain in recall@100 (+4-5 points), at twice the build time (21 vs 10 min on an Intel CPU).
+The model isn't the bottleneck; the catalog text is. MiniLM stays the default. To use BGE:
+
+```bash
+MOVIE_RAG_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 MOVIE_RAG_DB_PATH=chroma_db_bge movie-rag build --source mongo --min-ratings 1000
+MOVIE_RAG_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 MOVIE_RAG_DB_PATH=chroma_db_bge movie-rag eval
+```
+
+The index records which model built it, and querying it with a different model is refused.
 
 ## What the baseline gets wrong
 

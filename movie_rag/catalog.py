@@ -10,8 +10,8 @@ from pathlib import Path
 
 import chromadb
 
-from .config import CATALOG_PATH, COLLECTION_NAME, DB_PATH
-from .embeddings import embed
+from .config import CATALOG_PATH, COLLECTION_NAME, DB_PATH, EMBEDDING_MODEL
+from .embeddings import embed_documents
 
 # Chroma rejects very large single inserts, so documents are added in batches.
 ADD_BATCH_SIZE = 1000
@@ -98,7 +98,15 @@ def get_client(db_path: Path = DB_PATH) -> chromadb.ClientAPI:
 
 def get_collection(client: chromadb.ClientAPI | None = None) -> chromadb.Collection:
     client = client or get_client()
-    return client.get_collection(COLLECTION_NAME)
+    collection = client.get_collection(COLLECTION_NAME)
+    # Indexes built before the model was recorded used the original default.
+    built_with = (collection.metadata or {}).get("embedding_model", "sentence-transformers/all-MiniLM-L6-v2")
+    if built_with != EMBEDDING_MODEL:
+        raise SystemExit(
+            f"The index was built with {built_with} but MOVIE_RAG_EMBEDDING_MODEL is {EMBEDDING_MODEL}. "
+            "Rebuild it with `movie-rag build`, or switch the model back."
+        )
+    return collection
 
 
 def build_catalog(movies: list[Movie], client: chromadb.ClientAPI | None = None) -> chromadb.Collection:
@@ -110,10 +118,11 @@ def build_catalog(movies: list[Movie], client: chromadb.ClientAPI | None = None)
         COLLECTION_NAME,
         # Embeddings are normalized, so cosine distance = 1 - cosine similarity.
         configuration={"hnsw": {"space": "cosine"}},
+        metadata={"embedding_model": EMBEDDING_MODEL},
     )
 
     documents = [m.metadata_string for m in movies]
-    embeddings = embed(documents, show_progress=len(documents) > 200)
+    embeddings = embed_documents(documents, show_progress=len(documents) > 200)
     for start in range(0, len(movies), ADD_BATCH_SIZE):
         end = start + ADD_BATCH_SIZE
         collection.add(

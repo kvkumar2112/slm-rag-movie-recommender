@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import chromadb
 
 from .catalog import get_collection
-from .embeddings import embed
+from .embeddings import embed_queries
 from .schemas import TargetProfile
 from .slm import SLMGenerator, generate_target_profile, mock_slm_generate
 
@@ -84,7 +84,7 @@ def recommend(
 
     # Over-fetch so dropping the movies the user already named still leaves n_results.
     result = collection.query(
-        query_embeddings=embed([profile.target_profile]),
+        query_embeddings=embed_queries([profile.target_profile]),
         n_results=min(n_results + 10, collection.count()),
         where=build_where(min_year, max_year, min_rating),
     )

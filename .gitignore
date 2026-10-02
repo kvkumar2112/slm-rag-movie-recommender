@@ -11,7 +11,7 @@ dist/
 venv/
 
 # Local vector DB, downloaded datasets and generated training data
-chroma_db/
+chroma_db*/
 data/raw/
 data/training/
 

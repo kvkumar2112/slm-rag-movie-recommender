@@ -10,7 +10,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / "config-local.env")
 load_dotenv(PROJECT_ROOT / ".env")
 
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL = os.getenv("MOVIE_RAG_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+# Retrieval models like BGE are trained to embed search queries with an instruction prefix
+# (documents get none). MOVIE_RAG_QUERY_PREFIX overrides it; set it to "" to disable.
+QUERY_PREFIXES = {
+    "BAAI/bge-small-en-v1.5": "Represent this sentence for searching relevant passages: ",
+    "BAAI/bge-base-en-v1.5": "Represent this sentence for searching relevant passages: ",
+}
+QUERY_PREFIX = os.getenv("MOVIE_RAG_QUERY_PREFIX", QUERY_PREFIXES.get(EMBEDDING_MODEL, ""))
 COLLECTION_NAME = "movie_catalog"
 
 DB_PATH = Path(os.getenv("MOVIE_RAG_DB_PATH", "chroma_db"))

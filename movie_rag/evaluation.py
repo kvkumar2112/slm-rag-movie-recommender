@@ -16,7 +16,7 @@ from pathlib import Path
 import chromadb
 import pandas as pd
 
-from .embeddings import embed
+from .embeddings import embed_queries
 
 EVAL_QUERIES_PATH = Path(__file__).parent / "data" / "eval_queries.json"
 MIN_RELEVANCE = 0.5
@@ -93,7 +93,7 @@ def evaluate(
 ) -> list[QueryResult]:
     total = collection.count()
     result = collection.query(
-        query_embeddings=embed([q.profile for q in queries]),
+        query_embeddings=embed_queries([q.profile for q in queries]),
         n_results=min(n, total),
         include=["metadatas"],
     )
