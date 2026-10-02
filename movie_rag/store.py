@@ -25,11 +25,55 @@ from pymongo.errors import ServerSelectionTimeoutError
 
 from .catalog import Movie
 from .config import MONGO_DB, MONGO_URI
+from .ingest.movielens import tag_key
 
 # How many tags/keywords/cast members go into the embedded text.
 MAX_TAGS = 15
 MAX_KEYWORDS = 15
 MAX_CAST = 3
+
+# Tags that say how good or what kind of thing a movie is, rather than what it feels like.
+# They match every target profile equally ("great movie", "comedy"), so they drown out the
+# descriptive tags ("buddy movie", "road trip") that actually separate movies. Mongo keeps
+# them; they're only left out of the embedded text.
+GENERIC_TAGS = {
+    # praise / opinion
+    "original", "good", "great", "bad", "excellent", "awesome", "brilliant", "perfect", "genius",
+    "masterpiece", "classic", "cool", "interesting", "very interesting", "very good", "overrated",
+    "underrated", "boring", "boring!", "disappointing", "lame", "pointless", "stupid",
+    "stupid as hell", "dumb", "cheesy", "intelligent", "clever", "suprisingly clever",
+    "entertaining", "fun", "fun movie", "funny", "very funny", "funny as hell", "hilarious",
+    "great movie", "good acting", "great acting", "bad acting", "exceptional acting",
+    "good action", "good dialogue", "great dialogue", "good story", "good music", "great music",
+    "good soundtrack", "great soundtrack", "awesome soundtrack", "notable soundtrack",
+    "excellent script", "bad script", "bad plot", "no plot", "original plot", "great ending",
+    "bad ending", "powerful ending", "good sequel", "bad sequel", "crappy sequel",
+    "not as good as the first", "not funny", "sad but good", "so bad it's funny",
+    "so bad it's good", "unintentionally funny", "hard to watch", "predictable", "plot holes",
+    "bad cgi", "bad science", "good romantic comedies", "amazing", "great performances",
+    # craft, with no feel attached
+    "cinematography", "amazing cinematography", "great cinematography", "amazing photography",
+    "beautiful", "visually appealing", "visually stunning", "visual", "special effects",
+    "effects", "big budget", "storytelling", "story", "plot", "script", "dialogue", "music",
+    # metadata
+    "imdb top 250", "criterion", "best of 2005", "best war films", "potential oscar nom",
+    "adaptation", "literary adaptation", "video game adaptation", "sequel", "sequels",
+    "franchise", "remake", "pg", "pg-13", "easily confused with other movie(s) (title)",
+    "watch the credits", "male nudity", "notable nudity",
+    # genre labels (already in `genres`)
+    "comedy", "action", "drama", "sci-fi", "science fiction", "romance", "romantic", "horror",
+    "adventure", "animation", "animated", "fantasy", "crime", "thriller", "mystery",
+    "documentary", "musical", "western", "war", "family", "children", "kids", "kids and family",
+    "cartoon",
+}
+GENERIC_PREFIXES = ("oscar", "afi 100", "saturn award", "nudity", "adapted from:", "based on a book",
+                    "based on book", "based on a comic", "based on comic", "based on a play",
+                    "based on a tv show", "based on a video game")
+GENERIC_KEYS = {tag_key(t) for t in GENERIC_TAGS}  # also catches spellings like "scifi", "sci fi"
+
+
+def is_generic_tag(tag: str) -> bool:
+    return tag_key(tag) in GENERIC_KEYS or tag.startswith(GENERIC_PREFIXES)
 
 
 def get_db(client: MongoClient | None = None) -> Database:
@@ -59,9 +103,13 @@ def movie_from_doc(doc: dict) -> Movie:
     ratings = doc.get("ratings") or {}
 
     # Genome tags are curated and scored, so they go first; user tags fill the rest.
+    # Generic tags are dropped and spelling variants ("sci-fi", "scifi") kept once.
     tags: list[str] = []
+    seen: set[str] = set()
     for tag in [g["tag"] for g in doc.get("genome_tags", [])] + [t["tag"] for t in doc.get("user_tags", [])]:
-        if tag not in tags:
+        key = tag_key(tag)
+        if key not in seen and not is_generic_tag(tag):
+            seen.add(key)
             tags.append(tag)
 
     return Movie(

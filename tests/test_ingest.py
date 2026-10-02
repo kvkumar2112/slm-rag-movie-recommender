@@ -155,11 +155,12 @@ def test_movie_from_doc_merges_sources(db):
     db.movies.update_one({"_id": 1}, {"$set": {"tmdb": tmdb.parse_movie(TMDB_MATRIX)}})
 
     movie = store.movie_from_doc(db.movies.find_one({"_id": 1}))
-    assert movie.tags == ["virtual reality", "sci-fi", "cyberpunk"]  # genome first, then user tags
+    # Genome first, then user tags; "sci-fi" is a genre label, so it's dropped.
+    assert movie.tags == ["virtual reality", "cyberpunk"]
     assert movie.cast == ["Keanu Reeves", "Laurence Fishburne", "Carrie-Anne Moss"]
     assert movie.tmdb_id == 603
     text = movie.metadata_string
-    assert text.startswith("The Matrix (1999). Genres: Action, Sci-Fi, Thriller. Tags: virtual reality")
+    assert text.startswith("The Matrix (1999). Genres: Action, Sci-Fi, Thriller. Tags: virtual reality, cyberpunk.")
     assert "Plot: A hacker learns the truth" in text
     assert text.endswith("Starring Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss.")
 
@@ -168,3 +169,30 @@ def test_load_movies_filters_and_orders_by_rating_count(db):
     movielens.ingest(db, FIXTURES)
     assert [m.title for m in store.load_movies(db, min_ratings=2)] == ["The Matrix", "My Cousin Vinny"]
     assert len(store.load_movies(db)) == 4
+
+
+@pytest.mark.parametrize(
+    "tag, generic",
+    [
+        ("great acting", True),
+        ("oscar (best picture)", True),
+        ("based on a book", True),
+        ("scifi", True),  # spelling variant of the "sci-fi" genre label
+        ("nudity (topless - brief)", True),
+        ("buddy movie", False),
+        ("good versus evil", False),
+        ("based on a true story", False),
+        ("dialogue driven", False),
+    ],
+)
+def test_is_generic_tag(tag, generic):
+    assert store.is_generic_tag(tag) is generic
+
+
+def test_movie_from_doc_merges_tag_spellings():
+    doc = {
+        "_id": 1, "title": "X", "genres": [],
+        "genome_tags": [{"tag": "road trip", "relevance": 0.9}, {"tag": "great movie", "relevance": 0.8}],
+        "user_tags": [{"tag": "road-trip", "count": 3}, {"tag": "deadpan", "count": 1}],
+    }
+    assert store.movie_from_doc(doc).tags == ["road trip", "deadpan"]

@@ -29,8 +29,10 @@ DATASETS = {
 }
 DOWNLOAD_URL = "https://files.grouplens.org/datasets/movielens/{name}.zip"
 
-MAX_USER_TAGS = 15
-MAX_GENOME_TAGS = 15
+# Stored deeper than the 15 that get embedded, because generic tags are filtered out at
+# index time (store.is_generic_tag) and the rest should still fill the list.
+MAX_USER_TAGS = 30
+MAX_GENOME_TAGS = 30
 MIN_GENOME_RELEVANCE = 0.5
 # Bayesian mean = (PRIOR_WEIGHT * global_mean + sum_of_ratings) / (PRIOR_WEIGHT + count):
 # a movie with two 5-star ratings shouldn't outrank one with 2,000 ratings averaging 4.4.
